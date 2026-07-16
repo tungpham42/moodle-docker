@@ -1,4 +1,3 @@
-````markdown
 # Moodle Docker Deployment with Nginx and Cloudflare SSL (Complete Guide)
 
 This guide provides step-by-step instructions for deploying Moodle using Docker Compose, backed by a MariaDB database and an Nginx reverse proxy configured to work securely with Cloudflare SSL (Full Strict mode)[cite: 3]. It includes all necessary configurations and troubleshooting steps to resolve common setup errors.
@@ -22,7 +21,6 @@ moodle-docker/
         ├── bizeng.vn.pem
         └── bizeng.vn.key
 ```
-````
 
 ## Step 1: Cloudflare Configuration
 
