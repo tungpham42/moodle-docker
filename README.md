@@ -176,7 +176,7 @@ docker-compose restart moodle
 
 ## Step 6: Access Moodle
 
-1. Open your web browser and navigate to your domain: `[https://bizeng.vn](https://bizeng.vn)`.
+1. Open your web browser and navigate to your domain: `https://bizeng.vn`.
 
 2. Log in using the credentials defined in your `docker-compose.yml`:
 
