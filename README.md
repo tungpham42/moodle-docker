@@ -1,16 +1,16 @@
 # Moodle Docker Deployment with Nginx and Cloudflare SSL (Complete Guide)
 
-This guide provides step-by-step instructions for deploying Moodle using Docker Compose, backed by a MariaDB database and an Nginx reverse proxy configured to work securely with Cloudflare SSL (Full Strict mode)[cite: 3]. It includes all necessary configurations and troubleshooting steps to resolve common setup errors.
+This guide provides step-by-step instructions for deploying Moodle using Docker Compose, backed by a MariaDB database and an Nginx reverse proxy configured to work securely with Cloudflare SSL (Full Strict mode). It includes all necessary configurations and troubleshooting steps to resolve common setup errors.
 
 ## Prerequisites
 
-- **Docker** and **Docker Compose** installed on your server[cite: 3].
-- A registered domain name (e.g., `bizeng.vn`) managed via **Cloudflare**[cite: 3].
-- Ports `80` and `443` open on your server's firewall[cite: 3].
+- **Docker** and **Docker Compose** installed on your server.
+- A registered domain name (e.g., `bizeng.vn`) managed via **Cloudflare**.
+- Ports `80` and `443` open on your server's firewall.
 
 ## Directory Structure
 
-Ensure your project folder matches the following structure before starting the containers[cite: 3]:
+Ensure your project folder matches the following structure before starting the containers:
 
 ```text
 moodle-docker/
