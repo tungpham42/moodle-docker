@@ -5,7 +5,9 @@ This guide provides step-by-step instructions for deploying Moodle using Docker 
 ## Prerequisites
 
 - **Docker** and **Docker Compose** installed on your server.
+
 - A registered domain name (e.g., `bizeng.vn`) managed via **Cloudflare**.
+
 - Ports `80` and `443` open on your server's firewall.
 
 ## Directory Structure
@@ -20,6 +22,7 @@ moodle-docker/
     └── ssl/
         ├── bizeng.vn.pem
         └── bizeng.vn.key
+
 ```
 
 ## Step 1: Cloudflare Configuration
@@ -75,7 +78,7 @@ services:
       - MOODLE_REVERSEPROXY=yes
 
       # URL Configuration (Required for Reverse Proxy)
-      - MOODLE_URL=[https://bizeng.vn](https://bizeng.vn)
+      - MOODLE_URL=https://bizeng.vn
 
       # Admin Credentials (Required to prevent installation crash)
       - MOODLE_USERNAME=admin
@@ -173,11 +176,81 @@ docker-compose restart moodle
 
 ## Step 6: Access Moodle
 
-1. Open your web browser and navigate to your domain: `https://bizeng.vn`.
+1. Open your web browser and navigate to your domain: `[https://bizeng.vn](https://bizeng.vn)`.
+
 2. Log in using the credentials defined in your `docker-compose.yml`:
 
 - **Username**: `admin`
+
 - **Password**: `StrongAdminPassword123!`
+
+---
+
+## Backup and Restore Guide
+
+### 1. Backing Up Your Data Before a Reset
+
+Before resetting Docker, you must back up both your local configuration files and your Docker volumes.
+
+**A. Back Up Local Files**
+Create a copy of your entire `moodle-docker/` directory and store it in a safe location. This secures your `docker-compose.yml`, Nginx configurations, and SSL certificates.
+
+**B. Back Up Docker Volumes**
+Run the following commands in your terminal to extract the data from your Docker volumes into `.tar` archive files:
+
+```bash
+# Back up MariaDB Data
+docker run --rm -v moodle-docker_mariadb_data:/data -v $(pwd):/backup alpine tar cvf /backup/moodle-docker_mariadb_data_backup.tar /data
+
+# Back up Moodle Application Data
+docker run --rm -v moodle-docker_moodle_data:/data -v $(pwd):/backup alpine tar cvf /backup/moodle-docker_moodle_data_backup.tar /data
+
+# Back up Moodle User Data
+docker run --rm -v moodle-docker_moodledata_data:/data -v $(pwd):/backup alpine tar cvf /backup/moodle-docker_moodledata_data_backup.tar /data
+
+```
+
+### 2. Restoring Your Data
+
+If you have reset Docker or are moving to a new server, follow these steps to restore your environment.
+
+**A. Restore Local Files**
+Ensure your `moodle-docker/` folder is placed exactly where you want to run the application, preserving its original structure. Place the three `.tar` backup files in your current working directory.
+
+**B. Recreate Docker Volumes**
+Run the following commands to create empty volumes before unpacking the data:
+
+```bash
+docker volume create moodle-docker_mariadb_data
+docker volume create moodle-docker_moodle_data
+docker volume create moodle-docker_moodledata_data
+
+```
+
+**C. Extract Backup Data**
+Run these commands to unpack the archived data directly into the newly created volumes:
+
+```bash
+# Restore MariaDB Data
+docker run --rm -v moodle-docker_mariadb_data:/data -v $(pwd):/backup alpine tar xvf /backup/moodle-docker_mariadb_data_backup.tar -C /
+
+# Restore Moodle Application Data
+docker run --rm -v moodle-docker_moodle_data:/data -v $(pwd):/backup alpine tar xvf /backup/moodle-docker_moodle_data_backup.tar -C /
+
+# Restore Moodle User Data
+docker run --rm -v moodle-docker_moodledata_data:/data -v $(pwd):/backup alpine tar xvf /backup/moodle-docker_moodledata_data_backup.tar -C /
+
+```
+
+**D. Restart the Application**
+Navigate to your `moodle-docker` directory and start your containers:
+
+```bash
+docker-compose up -d
+
+```
+
+Because the volumes are already populated, MariaDB and Moodle will skip the initial setup and load your existing database and files.
 
 ---
 
@@ -186,20 +259,25 @@ docker-compose restart moodle
 ### 1. ERR_CONNECTION_REFUSED
 
 - **Cause:** Nginx failed to start, usually because the SSL files (`.pem` and `.key`) are missing or incorrectly named in the `./nginx/ssl/` directory.
+
 - **Fix:** Verify your SSL certificates exist in the correct folder. Run `docker logs moodle_nginx` to see the exact missing file error.
 
 ### 2. 502 Bad Gateway
 
 - **Cause A (During initial startup):** Moodle is still installing its database tables and hasn't started the web server yet.
+
 - **Fix:** Wait 3-5 minutes and refresh the page.
 
 - **Cause B (Persistent):** Nginx is pointing to the wrong internal port.
+
 - **Fix:** Ensure `proxy_pass http://moodle:80;` is set in `default.conf`, not `8080`.
 
 - **Cause C (Container crashed):** Moodle failed to install due to missing admin credentials.
+
 - **Fix:** Ensure `MOODLE_USERNAME` and `MOODLE_PASSWORD` are set in the `docker-compose.yml`. Clean up failed volumes with `docker-compose down -v` and run `docker-compose up -d` again.
 
 ### 3. Missing `config.php` during `sed` replace
 
 - **Cause:** Elestio Moodle builds place the web root in `/var/www/html/`, not `/bitnami/moodle/`.
+
 - **Fix:** Always target `/var/www/html/config.php` when modifying core files via the command line for this specific image.
