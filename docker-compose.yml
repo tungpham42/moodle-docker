@@ -1,44 +1,55 @@
-version: "3.8"
-
 services:
   mariadb:
-    image: bitnami/mariadb:latest
+    image: mariadb:10.11
     container_name: moodle_db
     environment:
-      - MARIADB_USER=moodle
-      - MARIADB_PASSWORD=moodle_secure_password
-      - MARIADB_DATABASE=bitnami_moodle
-      - MARIADB_ROOT_PASSWORD=root_secure_password
+      - MYSQL_ROOT_PASSWORD=root_secure_password
+      - MYSQL_DATABASE=moodle
+      - MYSQL_USER=moodle
+      - MYSQL_PASSWORD=moodle_secure_password
     volumes:
-      - mariadb_data:/bitnami/mariadb
+      - mariadb_data:/var/lib/mysql
     restart: always
 
   moodle:
-    image: bitnami/moodle:latest
+    image: elestio/moodle:latest
     container_name: moodle_app
     environment:
+      - MOODLE_DATABASE_TYPE=mariadb
       - MOODLE_DATABASE_HOST=mariadb
       - MOODLE_DATABASE_PORT_NUMBER=3306
+      - MOODLE_DATABASE_NAME=moodle
       - MOODLE_DATABASE_USER=moodle
       - MOODLE_DATABASE_PASSWORD=moodle_secure_password
-      - MOODLE_DATABASE_NAME=bitnami_moodle
-      # Khai báo biến này để Moodle hiểu nó đang chạy sau một Reverse Proxy (Nginx)
       - MOODLE_REVERSEPROXY=yes
+
+      # ==========================================
+      # BỔ SUNG BIẾN ĐỊNH DANH URL GỐC LÀ HTTPS:
+      # ==========================================
+      - MOODLE_URL=https://localhost
+
+      # ==========================================
+      # BỔ SUNG CÁC BIẾN CẤU HÌNH ADMIN DƯỚI ĐÂY:
+      # ==========================================
+      - MOODLE_USERNAME=admin
+      - MOODLE_PASSWORD=password
+      - MOODLE_EMAIL=admin@bizeng.vn
     volumes:
       - moodle_data:/bitnami/moodle
       - moodledata_data:/bitnami/moodledata
     depends_on:
       - mariadb
     restart: always
+
   nginx:
     image: nginx:latest
     container_name: moodle_nginx
     ports:
       - "80:80"
-      - "443:443" # Đã mở port 443
+      - "443:443"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro # Mount chứng chỉ SSL vào Nginx
+      - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       - moodle
     restart: always
