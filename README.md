@@ -205,7 +205,3 @@ docker-compose restart moodle
 
 - **Cause:** Elestio Moodle builds place the web root in `/var/www/html/`, not `/bitnami/moodle/`.
 - **Fix:** Always target `/var/www/html/config.php` when modifying core files via the command line for this specific image.
-
-```
-
-```
